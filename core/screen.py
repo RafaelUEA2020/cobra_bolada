@@ -1,5 +1,8 @@
+# core/screen.py
+
 import pygame
-from assets import config  # Importa referenciando a raiz do projeto
+from assets import config
+
 
 class GameScreen:
     def __init__(self):
