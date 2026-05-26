@@ -4,31 +4,27 @@ from assets import config
 from core.screen import GameScreen
 from core.snake import Snake
 from core.apple import Apple
-from core.hud import HUD  # Importa o novo módulo HUD
+from core.hud import HUD
 
 def run_game():
     pygame.init()
     screen = GameScreen()
     clock = pygame.time.Clock()
     
-    # Instanciação dos objetos
     snake = Snake()
     apple = Apple(snake.body)
-    hud = HUD()  # Instancia o gerenciador do placar
+    hud = HUD()
     
-    # Evento de tempo para o movimento da cobra
     SNAKE_MOVE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(SNAKE_MOVE_EVENT, 1000 // config.INITIAL_SPEED)
     
     while True:
-        # 1. Gerenciamento de Eventos e Inputs
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             
             elif event.type == SNAKE_MOVE_EVENT:
-                # Lógica de Movimento e Crescimento
                 current_head = snake.body[0]
                 new_head = [
                     current_head[0] + snake.direction[0],
@@ -48,7 +44,11 @@ def run_game():
                 hit_self = snake.check_self_collision()
                 
                 if hit_wall_x or hit_wall_y or hit_self:
-                    # Reset do Jogo mantém o placar zerado automaticamente
+                    # --- NOVO: Salva o recorde antes de resetar o jogo ---
+                    current_score = len(snake.body) - 3
+                    hud.save_high_score(current_score)
+                    
+                    # Reset do Jogo
                     snake = Snake()
                     apple = Apple(snake.body)
                 
@@ -62,14 +62,10 @@ def run_game():
                 elif event.key == pygame.K_RIGHT:
                     snake.change_direction("RIGHT")
         
-        # 2. Renderização
         screen.render_background()
         
-        # Desenha os elementos do jogo
         snake.draw(screen.surface)
         apple.draw(screen.surface)
-        
-        # Desenha o HUD por cima dos elementos, passando o tamanho atual da lista do corpo
         hud.draw_score(screen.surface, len(snake.body))
         
         screen.update()
