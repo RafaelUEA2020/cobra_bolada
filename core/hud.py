@@ -47,3 +47,13 @@ class HUD:
         # Calcula a posição X do High Score para não sumir da tela
         high_score_x = config.SCREEN_WIDTH - high_score_surface.get_width() - 10
         surface.blit(high_score_surface, (high_score_x, 10))
+        
+    def draw_paused(self, surface):
+        """Desenha uma mensagem de pausa centralizada na tela."""
+        paused_surface = self.font.render("PAUSED", True, config.COLOR_SCORE)
+        
+        # Calcula o centro exato da tela para posicionar o texto
+        text_x = (config.SCREEN_WIDTH - paused_surface.get_width()) // 2
+        text_y = (config.SCREEN_HEIGHT - paused_surface.get_height()) // 2
+        
+        surface.blit(paused_surface, (text_x, text_y))
