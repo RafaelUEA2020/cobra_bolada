@@ -3,6 +3,7 @@
 import pygame
 from assets import config
 
+
 class Snake:
     def __init__(self, player: int):
         """
@@ -16,20 +17,22 @@ class Snake:
 
         # Cores do corpo e da cabeça (diferentes por jogador)
         bs = self.block_size
+
         if player == 1:
             self.color      = config.COLOR_SNAKE_1
             self.head_color = config.COLOR_SNAKE_1_HEAD
-            # Spawn alinhado ao grid: quarto esquerdo da tela
             cx = ((config.SCREEN_WIDTH // 4) // bs) * bs
             cy = ((config.SCREEN_HEIGHT // 2) // bs) * bs
             self.direction = [bs, 0]
         else:
             self.color      = config.COLOR_SNAKE_2
             self.head_color = config.COLOR_SNAKE_2_HEAD
-            # Spawn alinhado ao grid: quarto direito da tela
             cx = (((config.SCREEN_WIDTH * 3) // 4) // bs) * bs
             cy = ((config.SCREEN_HEIGHT // 2) // bs) * bs
             self.direction = [-bs, 0]
+
+        # Fila de direção: aceita no máximo 1 input por frame de movimento
+        self._next_direction = self.direction[:]
 
         # Corpo inicial com 3 blocos
         if player == 1:
@@ -50,7 +53,11 @@ class Snake:
     # ------------------------------------------------------------------
 
     def change_direction(self, new_direction: str):
-        """Altera a direção impedindo inversão de 180°."""
+        """
+        Registra a intenção de mudança de direção.
+        A direção só é aplicada no próximo frame de movimento,
+        evitando morte por dois inputs rápidos antes de um step.
+        """
         bs = self.block_size
         opposites = {
             "UP":    [0,   bs],
@@ -64,12 +71,20 @@ class Snake:
             "LEFT":  [-bs,  0],
             "RIGHT": [bs,   0],
         }
+        # Bloqueia 180° contra a direção ATUAL (não a pendente)
         if new_direction in moves and self.direction != opposites[new_direction]:
-            self.direction = moves[new_direction]
+            self._next_direction = moves[new_direction]
 
     # ------------------------------------------------------------------
     # Movimento
     # ------------------------------------------------------------------
+
+    def apply_direction(self):
+        """
+        Aplica a direção pendente. Deve ser chamado UMA VEZ por step,
+        antes de get_next_head(), move() ou grow().
+        """
+        self.direction = self._next_direction[:]
 
     def get_next_head(self) -> list:
         """Retorna a posição que a cabeça ocupará no próximo passo."""

@@ -48,20 +48,18 @@ class HUD:
         surf1 = self.font.render(f"P1: {score1}", True, config.COLOR_SNAKE_1)
         surf_hs = self.font_small.render(f"Record: {self.high_score}", True, (160, 160, 160))
 
-        surface.blit(surf1, (10, 10))
         if snake2:
+            # Multiplayer: P1 esquerda, P2 direita, recorde centralizado
             surf2 = self.font.render(f"P2: {score2}", True, config.COLOR_SNAKE_2)
+            surface.blit(surf1, (10, 10))
             surface.blit(surf2, (config.SCREEN_WIDTH - surf2.get_width() - 10, 10))
+            hs_x = (config.SCREEN_WIDTH - surf_hs.get_width()) // 2
+            surface.blit(surf_hs, (hs_x, 14))
         else:
-            # Single: mostra pontuação e recorde lado a lado
+            # Single: só Score e Record
             surf_score = self.font.render(f"Score: {score1}", True, config.COLOR_SCORE)
             surface.blit(surf_score, (10, 10))
             surface.blit(surf_hs, (config.SCREEN_WIDTH - surf_hs.get_width() - 10, 14))
-            return
-
-        # Multiplayer: recorde centralizado
-        hs_x = (config.SCREEN_WIDTH - surf_hs.get_width()) // 2
-        surface.blit(surf_hs, (hs_x, 14))
 
     # Menu — seleção de modo
 

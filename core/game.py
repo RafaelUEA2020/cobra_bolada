@@ -105,6 +105,7 @@ def run_game():
                 and not is_confirming_exit
                 and winner is None
             ):
+                snake1.apply_direction()
                 next1 = snake1.get_next_head()
 
                 # SINGLE PLAYER 
@@ -115,17 +116,17 @@ def run_game():
                     else:
                         snake1.move()
 
-                    head = snake1.body[0]
                     dead = (
                         snake1.check_wall_collision() or
                         snake1.check_self_collision()
                     )
                     if dead:
                         hud.save_high_score(len(snake1.body) - 3)
-                        winner = 1  # "fim de jogo" — reusa tela de winner com msg especial
+                        winner = 1
 
                 # ── MULTIPLAYER ───────────────────────────────────────
                 else:
+                    snake2.apply_direction()
                     next2 = snake2.get_next_head()
 
                     # Resolve quem come a maçã (prioridade: quem chegar primeiro;
