@@ -88,6 +88,7 @@ C4Container
 ```mermaid
 C4Component
     title C4 Component - Core e Entrada do Snake Game
+    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="4")
 
     Container_Boundary(appContainer, "Aplicacao Python") {
         Component(main, "main.py", "Python module", "Importa e executa run_game().")
@@ -120,33 +121,11 @@ C4Component
     Rel(game, hud, "Atualiza placar e desenha telas de estado")
     Rel(game, controls, "Envia teclas para tratamento")
     Rel(game, config, "Le FPS, velocidade e constantes")
+    Rel(game, pygameRuntime, "Usa eventos e timer")
 
     Rel(controls, snake, "Solicita mudanca de direcao")
-    Rel(controls, config, "Relaciona controles definidos para jogadores")
-
-    Rel(screen, config, "Le largura, altura, titulo e cor de fundo")
-    Rel(snake, config, "Le grid, limites e cores das cobras")
-    Rel(apple, config, "Le grid, limites e cor da maca")
-    Rel(hud, config, "Le fonte, cores e dimensoes")
 
     Rel(hud, highScore, "Le e grava recorde")
-
-    Rel(screen, pygameRuntime, "Usa display")
-    Rel(game, pygameRuntime, "Usa eventos e timer")
-    Rel(snake, pygameRuntime, "Usa Rect e draw")
-    Rel(apple, pygameRuntime, "Usa Rect e draw")
-    Rel(hud, pygameRuntime, "Usa fontes e superficies")
-
-    Lay_R(main, game)
-    Lay_R(game, controls)
-    Lay_R(controls, snake)
-    Lay_D(game, screen)
-    Lay_D(screen, snake)
-    Lay_D(snake, apple)
-    Lay_D(apple, hud)
-    Lay_R(game, config)
-    Lay_R(hud, highScore)
-    Lay_R(screen, pygameRuntime)
 
     UpdateRelStyle(main, game, $textColor="white", $lineColor="white")
     UpdateRelStyle(game, screen, $textColor="white", $lineColor="white")
@@ -156,17 +135,8 @@ C4Component
     UpdateRelStyle(game, controls, $textColor="white", $lineColor="white")
     UpdateRelStyle(game, config, $textColor="white", $lineColor="white")
     UpdateRelStyle(controls, snake, $textColor="white", $lineColor="white")
-    UpdateRelStyle(controls, config, $textColor="white", $lineColor="white")
-    UpdateRelStyle(screen, config, $textColor="white", $lineColor="white")
-    UpdateRelStyle(snake, config, $textColor="white", $lineColor="white")
-    UpdateRelStyle(apple, config, $textColor="white", $lineColor="white")
-    UpdateRelStyle(hud, config, $textColor="white", $lineColor="white")
     UpdateRelStyle(hud, highScore, $textColor="white", $lineColor="white")
-    UpdateRelStyle(screen, pygameRuntime, $textColor="white", $lineColor="white")
     UpdateRelStyle(game, pygameRuntime, $textColor="white", $lineColor="white")
-    UpdateRelStyle(snake, pygameRuntime, $textColor="white", $lineColor="white")
-    UpdateRelStyle(apple, pygameRuntime, $textColor="white", $lineColor="white")
-    UpdateRelStyle(hud, pygameRuntime, $textColor="white", $lineColor="white")
 ```
 
 ### Componentes principais
@@ -178,6 +148,13 @@ C4Component
 - `core.screen.GameScreen`: encapsula a janela do Pygame.
 - `client.controls`: traduz entrada de teclado em comandos do jogo.
 - `assets.config`: centraliza constantes compartilhadas.
+
+### Dependencias transversais omitidas do diagrama
+
+Para reduzir poluicao visual na camada Component, algumas dependencias repetidas nao foram desenhadas como setas individuais:
+
+- `assets.config` tambem e usado por `core.screen`, `core.snake`, `core.apple`, `core.hud` e `client.controls`.
+- `Pygame Runtime` tambem e usado por `core.screen`, `core.snake`, `core.apple` e `core.hud` para display, desenho, fontes e superficies.
 
 ## Observacoes arquiteturais
 
