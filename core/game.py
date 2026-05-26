@@ -11,17 +11,21 @@ from core.hud    import HUD
 from client.controls import handle_keydown
 
 
-def _occupied(snake1: Snake, snake2: Snake) -> list:
-    """Retorna todas as posições ocupadas pelas duas cobras."""
-    return snake1.body + snake2.body
+def _occupied(snake1: Snake, snake2=None) -> list:
+    if snake2:
+        return snake1.body + snake2.body
+    return snake1.body
 
 
-def _new_round():
-    """Cria cobras e maçã para uma nova rodada."""
+def _new_round(multiplayer: bool):
     s1 = Snake(1)
-    s2 = Snake(2)
-    apple = Apple(_occupied(s1, s2))
-    return s1, s2, apple
+    if multiplayer:
+        s2 = Snake(2)
+        apple = Apple(_occupied(s1, s2))
+        return s1, s2, apple
+    else:
+        apple = Apple(_occupied(s1))
+        return s1, None, apple
 
 
 def run_game():
@@ -30,13 +34,14 @@ def run_game():
     clock = pygame.time.Clock()
     hud    = HUD()
 
-    snake1, snake2, apple = _new_round()
-
     # ── Estados ───────────────────────────────────────────────────
     in_menu           = True
     is_paused         = False
     is_confirming_exit = False
-    winner            = None   # None = jogo em curso | 0 = empate | 1 | 2
+    winner            = None   # None=jogando | 0=empate | 1 | 2
+    multiplayer       = False  # definido na seleção do menu
+
+    snake1, snake2, apple = _new_round(multiplayer)
 
     SNAKE_MOVE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(SNAKE_MOVE_EVENT, 1000 // config.INITIAL_SPEED)
@@ -44,55 +49,55 @@ def run_game():
     while True:
         for event in pygame.event.get():
 
-            # ── Fechar janela ────────────────────────────────────────
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
             elif event.type == pygame.KEYDOWN:
 
-                # ── MENU INICIAL ─────────────────────────────────────
+                # MENU 
                 if in_menu:
-                    if event.key == pygame.K_SPACE:
-                        snake1, snake2, apple = _new_round()
-                        winner    = None
-                        is_paused = False
-                        in_menu   = False
+                    if event.key == pygame.K_1:
+                        multiplayer = False
+                        snake1, snake2, apple = _new_round(multiplayer)
+                        winner = None; is_paused = False; in_menu = False
+                    elif event.key == pygame.K_2:
+                        multiplayer = True
+                        snake1, snake2, apple = _new_round(multiplayer)
+                        winner = None; is_paused = False; in_menu = False
                     elif event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
 
-                # ── TELA DE VENCEDOR ─────────────────────────────────
+                # TELA DE VENCEDOR / FIM DE JOGO 
                 elif winner is not None:
-                    if event.key == pygame.K_SPACE:          # novo jogo
-                        snake1, snake2, apple = _new_round()
-                        winner    = None
-                        is_paused = False
-                    elif event.key == pygame.K_ESCAPE:       # volta ao menu
-                        in_menu = True
-                        winner  = None
+                    if event.key == pygame.K_SPACE:
+                        snake1, snake2, apple = _new_round(multiplayer)
+                        winner = None; is_paused = False
+                    elif event.key == pygame.K_ESCAPE:
+                        in_menu = True; winner = None
 
-                # ── CONFIRMANDO SAÍDA ────────────────────────────────
+                # CONFIRMANDO SAÍDA
                 elif is_confirming_exit:
                     if event.key == pygame.K_y:
                         is_confirming_exit = False
-                        is_paused          = False
-                        in_menu            = True
-                        winner             = None
-                        snake1, snake2, apple = _new_round()
+                        is_paused = False
+                        in_menu = True
+                        winner = None
+                        snake1, snake2, apple = _new_round(multiplayer)
                     elif event.key in (pygame.K_n, pygame.K_ESCAPE):
                         is_confirming_exit = False
 
-                # ── JOGO EM ANDAMENTO ────────────────────────────────
+                # JOGO EM ANDAMENTO
                 else:
                     if event.key == pygame.K_ESCAPE:
                         is_confirming_exit = True
                     else:
                         is_paused = handle_keydown(
-                            event.key, snake1, snake2, is_paused
+                            event.key, snake1, snake2, is_paused, multiplayer
                         )
 
-            # ── MOVIMENTO DAS COBRAS ─────────────────────────────────
+            # MOVIMENTO
             elif (
                 event.type == SNAKE_MOVE_EVENT
                 and not in_menu
@@ -101,46 +106,68 @@ def run_game():
                 and winner is None
             ):
                 next1 = snake1.get_next_head()
-                next2 = snake2.get_next_head()
 
-                # --- Cobra 1 come a maçã? ---
-                if next1 == apple.position:
-                    snake1.grow(next1)
-                    apple.randomize_position(_occupied(snake1, snake2))
+                # SINGLE PLAYER 
+                if not multiplayer:
+                    if next1 == apple.position:
+                        snake1.grow(next1)
+                        apple.randomize_position(_occupied(snake1))
+                    else:
+                        snake1.move()
+
+                    head = snake1.body[0]
+                    dead = (
+                        snake1.check_wall_collision() or
+                        snake1.check_self_collision()
+                    )
+                    if dead:
+                        hud.save_high_score(len(snake1.body) - 3)
+                        winner = 1  # "fim de jogo" — reusa tela de winner com msg especial
+
+                # ── MULTIPLAYER ───────────────────────────────────────
                 else:
-                    snake1.move()
+                    next2 = snake2.get_next_head()
 
-                # --- Cobra 2 come a maçã? ---
-                if next2 == apple.position:
-                    snake2.grow(next2)
-                    apple.randomize_position(_occupied(snake1, snake2))
-                else:
-                    snake2.move()
+                    # Resolve quem come a maçã (prioridade: quem chegar primeiro;
+                    # se os dois chegarem no mesmo frame, cobra1 tem prioridade)
+                    ate1 = (next1 == apple.position)
+                    ate2 = (next2 == apple.position)
 
-                # --- Detecção de colisões ---
-                dead1 = (
-                    snake1.check_wall_collision()   or
-                    snake1.check_self_collision()   or
-                    snake1.check_collision_with(snake2)
-                )
-                dead2 = (
-                    snake2.check_wall_collision()   or
-                    snake2.check_self_collision()   or
-                    snake2.check_collision_with(snake1)
-                )
+                    if ate1:
+                        snake1.grow(next1)
+                        apple.randomize_position(_occupied(snake1, snake2))
+                        # Recalcula next2 para evitar que cobra2 "coma" a posição antiga
+                        ate2 = False
+                    else:
+                        snake1.move()
 
-                if dead1 or dead2:
-                    # Salva o maior placar da rodada
-                    hud.save_high_score(
-                        max(len(snake1.body) - 3, len(snake2.body) - 3)
+                    if ate2:
+                        snake2.grow(next2)
+                        apple.randomize_position(_occupied(snake1, snake2))
+                    else:
+                        snake2.move()
+
+                    dead1 = (
+                        snake1.check_wall_collision() or
+                        snake1.check_self_collision() or
+                        snake1.check_collision_with(snake2)
+                    )
+                    dead2 = (
+                        snake2.check_wall_collision() or
+                        snake2.check_self_collision() or
+                        snake2.check_collision_with(snake1)
                     )
 
-                    if dead1 and dead2:
-                        winner = 0     
-                    elif dead1:
-                        winner = 2      
-                    else:
-                        winner = 1     
+                    if dead1 or dead2:
+                        hud.save_high_score(
+                            max(len(snake1.body) - 3, len(snake2.body) - 3)
+                        )
+                        if dead1 and dead2:
+                            winner = 0
+                        elif dead1:
+                            winner = 2
+                        else:
+                            winner = 1
 
         # ── Renderização ─────────────────────────────────────────────
         screen.render_background()
@@ -148,16 +175,18 @@ def run_game():
         if in_menu:
             hud.draw_menu(screen.surface)
         else:
-            # Sempre desenha o estado atual do jogo como fundo
             snake1.draw(screen.surface)
-            snake2.draw(screen.surface)
+            if multiplayer and snake2:
+                snake2.draw(screen.surface)
             apple.draw(screen.surface)
-            hud.draw_score(screen.surface, snake1, snake2)
+            hud.draw_score(screen.surface, snake1, snake2 if multiplayer else None)
+
             if winner is not None:
-                hud.draw_winner(screen.surface, winner)
+                hud.draw_winner(screen.surface, winner, multiplayer)
             elif is_paused:
                 hud.draw_paused(screen.surface)
             elif is_confirming_exit:
                 hud.draw_exit_confirmation(screen.surface)
+
         screen.update()
         clock.tick(config.FPS)

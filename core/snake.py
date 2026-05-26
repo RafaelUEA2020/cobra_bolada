@@ -15,23 +15,23 @@ class Snake:
         self.player     = player
 
         # Cores do corpo e da cabeça (diferentes por jogador)
+        bs = self.block_size
         if player == 1:
             self.color      = config.COLOR_SNAKE_1
             self.head_color = config.COLOR_SNAKE_1_HEAD
-            # Spawn: quarto esquerdo da tela, movendo para a direita
-            cx = config.SCREEN_WIDTH  // 4
-            cy = config.SCREEN_HEIGHT // 2
-            self.direction = [self.block_size, 0]
+            # Spawn alinhado ao grid: quarto esquerdo da tela
+            cx = ((config.SCREEN_WIDTH // 4) // bs) * bs
+            cy = ((config.SCREEN_HEIGHT // 2) // bs) * bs
+            self.direction = [bs, 0]
         else:
             self.color      = config.COLOR_SNAKE_2
             self.head_color = config.COLOR_SNAKE_2_HEAD
-            # Spawn: quarto direito da tela, movendo para a esquerda
-            cx = (config.SCREEN_WIDTH * 3) // 4
-            cy = config.SCREEN_HEIGHT // 2
-            self.direction = [-self.block_size, 0]
+            # Spawn alinhado ao grid: quarto direito da tela
+            cx = (((config.SCREEN_WIDTH * 3) // 4) // bs) * bs
+            cy = ((config.SCREEN_HEIGHT // 2) // bs) * bs
+            self.direction = [-bs, 0]
 
         # Corpo inicial com 3 blocos
-        bs = self.block_size
         if player == 1:
             self.body = [
                 [cx,          cy],
