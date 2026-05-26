@@ -18,6 +18,7 @@ def run_game():
     # Estados do Jogo
     in_menu = True
     is_paused = False
+    is_confirming_exit = False
     
     SNAKE_MOVE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(SNAKE_MOVE_EVENT, 1000 // config.INITIAL_SPEED)
@@ -29,14 +30,36 @@ def run_game():
                 sys.exit()
             
             elif event.type == pygame.KEYDOWN:
-                # Se estiver no menu inicial, só reage à tecla ESPAÇO
+                # ==========================================
+                # CONTEXTO 1: SE ESTIVER NO MENU INICIAL
+                # ==========================================
                 if in_menu:
                     if event.key == pygame.K_SPACE:
                         in_menu = False
+                    elif event.key == pygame.K_ESCAPE: # Se apertar ESC no menu, fecha direto
+                        pygame.quit()
+                        sys.exit()
                 
-                # Se não estiver no menu, roda a lógica normal de jogo e pausa
+                # ==========================================
+                # CONTEXTO 2: SE ESTIVER CONFIRMANDO A SAÍDA DO JOGO
+                # ==========================================
+                elif is_confirming_exit:
+                    if event.key == pygame.K_y:
+                        is_confirming_exit = False
+                        in_menu = True
+                        snake = Snake()
+                        apple = Apple(snake.body)
+                    elif event.key == pygame.K_n or event.key == pygame.K_ESCAPE:
+                        is_confirming_exit = False
+                
+                # ==========================================
+                # CONTEXTO 3: SE ESTIVER NO JOGO EM ANDAMENTO
+                # ==========================================
                 else:
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_ESCAPE: # Se apertar ESC jogando, abre a confirmação
+                        is_confirming_exit = True
+                    
+                    elif event.key == pygame.K_p:
                         is_paused = not is_paused
                     
                     if not is_paused:
@@ -49,8 +72,8 @@ def run_game():
                         elif event.key == pygame.K_RIGHT:
                             snake.change_direction("RIGHT")
             
-            # O movimento só acontece se NÃO estiver no menu e NÃO estiver pausado
-            elif event.type == SNAKE_MOVE_EVENT and not in_menu and not is_paused:
+            # Movimento da cobra
+            elif event.type == SNAKE_MOVE_EVENT and not in_menu and not is_paused and not is_confirming_exit:
                 current_head = snake.body[0]
                 new_head = [
                     current_head[0] + snake.direction[0],
@@ -63,7 +86,7 @@ def run_game():
                 else:
                     snake.move()
                 
-                # Sistema de Colisões (Game Over)
+                # Sistema de Colisões
                 head = snake.body[0]
                 hit_wall_x = head[0] < 0 or head[0] >= config.SCREEN_WIDTH
                 hit_wall_y = head[1] < 0 or head[1] >= config.SCREEN_HEIGHT
@@ -73,7 +96,6 @@ def run_game():
                     current_score = len(snake.body) - 3
                     hud.save_high_score(current_score)
                     
-                    # Reseta os objetos e volta para o menu inicial
                     snake = Snake()
                     apple = Apple(snake.body)
                     in_menu = True 
@@ -82,16 +104,17 @@ def run_game():
         screen.render_background()
         
         if in_menu:
-            # Se estiver no menu, desenha apenas a tela inicial
             hud.draw_menu(screen.surface)
         else:
-            # Se estiver jogando, desenha os elementos normais do gameplay
             snake.draw(screen.surface)
             apple.draw(screen.surface)
             hud.draw_score(screen.surface, len(snake.body))
             
             if is_paused:
                 hud.draw_paused(screen.surface)
+                
+            if is_confirming_exit:
+                hud.draw_exit_confirmation(screen.surface)
         
         screen.update()
         clock.tick(config.FPS)

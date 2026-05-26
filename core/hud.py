@@ -60,21 +60,39 @@ class HUD:
 
     def draw_menu(self, surface):
         """Desenha a tela de menu inicial com o título e instruções."""
-        # Cria uma fonte maior para o título do jogo
         main_font = pygame.font.SysFont(config.FONT_NAME, 40)
         
-        # Renderiza os textos
         title_surf = main_font.render(config.GAME_TITLE.upper(), True, config.COLOR_SNAKE)
         start_surf = self.font.render("Press SPACE to Start", True, (255, 255, 255))
         
-        # Instruções de controles
+        # Instruções de controles atualizadas
         move_surf = self.font.render("Arrow Keys: Move Snake", True, (180, 180, 180))
         pause_surf = self.font.render("P Key: Pause / Unpause Game", True, (180, 180, 180))
+        exit_surf = self.font.render("ESC Key: Quit Game (from Menu)", True, (180, 180, 180)) # Nova linha
         
-        # Calcula as posições centralizadas na tela
         center_x = config.SCREEN_WIDTH // 2
         
-        surface.blit(title_surf, (center_x - title_surf.get_width() // 2, 150))
-        surface.blit(start_surf, (center_x - start_surf.get_width() // 2, 250))
-        surface.blit(move_surf, (center_x - move_surf.get_width() // 2, 380))
-        surface.blit(pause_surf, (center_x - pause_surf.get_width() // 2, 420))
+        surface.blit(title_surf, (center_x - title_surf.get_width() // 2, 120))
+        surface.blit(start_surf, (center_x - start_surf.get_width() // 2, 220))
+        surface.blit(move_surf, (center_x - move_surf.get_width() // 2, 350))
+        surface.blit(pause_surf, (center_x - pause_surf.get_width() // 2, 390))
+        surface.blit(exit_surf, (center_x - exit_surf.get_width() // 2, 430)) # Desenha a nova linha
+        
+    def draw_exit_confirmation(self, surface):
+        """Desenha uma tela de confirmação perguntando se o usuário quer voltar ao menu."""
+        # Cria uma superfície semi-transparente para escurecer o fundo do jogo
+        overlay = pygame.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+        overlay.set_alpha(150) # Nível de transparência (0 a 255)
+        overlay.fill((10, 10, 10))
+        surface.blit(overlay, (0, 0))
+
+        # Renderiza os textos da mensagem
+        msg_surf1 = self.font.render("Return to Main Menu?", True, config.COLOR_SCORE)
+        msg_surf2 = self.font.render("Press Y (Yes) or N (No)", True, config.COLOR_APPLE)
+        
+        center_x = config.SCREEN_WIDTH // 2
+        center_y = config.SCREEN_HEIGHT // 2
+        
+        # Desenha centralizado
+        surface.blit(msg_surf1, (center_x - msg_surf1.get_width() // 2, center_y - 30))
+        surface.blit(msg_surf2, (center_x - msg_surf2.get_width() // 2, center_y + 10))
