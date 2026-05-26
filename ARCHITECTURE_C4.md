@@ -22,6 +22,11 @@ C4Context
     Rel(player2, snakeGame, "Controla a cobra do jogador 2 no modo multiplayer")
     Rel(snakeGame, fileSystem, "Le e grava recorde")
     Rel(snakeGame, pygameRuntime, "Usa para renderizacao, eventos e janela")
+
+    UpdateRelStyle(player1, snakeGame, $textColor="white", $lineColor="white")
+    UpdateRelStyle(player2, snakeGame, $textColor="white", $lineColor="white")
+    UpdateRelStyle(snakeGame, fileSystem, $textColor="white", $lineColor="white")
+    UpdateRelStyle(snakeGame, pygameRuntime, $textColor="white", $lineColor="white")
 ```
 
 ### Responsabilidades
@@ -59,6 +64,15 @@ C4Container
     Rel(client, assets, "Usa configuracoes conceituais de controle")
     Rel(core, highScore, "Le e grava recorde")
     Rel(core, pygameRuntime, "Usa eventos, timer, desenho e display")
+
+    UpdateRelStyle(player1, app, $textColor="white", $lineColor="white")
+    UpdateRelStyle(player2, app, $textColor="white", $lineColor="white")
+    UpdateRelStyle(app, core, $textColor="white", $lineColor="white")
+    UpdateRelStyle(core, client, $textColor="white", $lineColor="white")
+    UpdateRelStyle(core, assets, $textColor="white", $lineColor="white")
+    UpdateRelStyle(client, assets, $textColor="white", $lineColor="white")
+    UpdateRelStyle(core, highScore, $textColor="white", $lineColor="white")
+    UpdateRelStyle(core, pygameRuntime, $textColor="white", $lineColor="white")
 ```
 
 ### Containers do projeto
@@ -122,6 +136,37 @@ C4Component
     Rel(snake, pygameRuntime, "Usa Rect e draw")
     Rel(apple, pygameRuntime, "Usa Rect e draw")
     Rel(hud, pygameRuntime, "Usa fontes e superficies")
+
+    Lay_R(main, game)
+    Lay_R(game, controls)
+    Lay_R(controls, snake)
+    Lay_D(game, screen)
+    Lay_D(screen, snake)
+    Lay_D(snake, apple)
+    Lay_D(apple, hud)
+    Lay_R(game, config)
+    Lay_R(hud, highScore)
+    Lay_R(screen, pygameRuntime)
+
+    UpdateRelStyle(main, game, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, screen, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, snake, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, apple, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, hud, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, controls, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(controls, snake, $textColor="white", $lineColor="white")
+    UpdateRelStyle(controls, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(screen, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(snake, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(apple, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(hud, config, $textColor="white", $lineColor="white")
+    UpdateRelStyle(hud, highScore, $textColor="white", $lineColor="white")
+    UpdateRelStyle(screen, pygameRuntime, $textColor="white", $lineColor="white")
+    UpdateRelStyle(game, pygameRuntime, $textColor="white", $lineColor="white")
+    UpdateRelStyle(snake, pygameRuntime, $textColor="white", $lineColor="white")
+    UpdateRelStyle(apple, pygameRuntime, $textColor="white", $lineColor="white")
+    UpdateRelStyle(hud, pygameRuntime, $textColor="white", $lineColor="white")
 ```
 
 ### Componentes principais
