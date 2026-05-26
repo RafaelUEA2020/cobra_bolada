@@ -14,3 +14,8 @@ COLOR_APPLE = (231, 76, 60)         # Red
 
 # Game Mechanics
 INITIAL_SPEED = 10
+
+# Font Configurations
+FONT_NAME = 'Arial'
+FONT_SIZE = 25
+COLOR_SCORE = (255, 255, 255) # Branco para o texto

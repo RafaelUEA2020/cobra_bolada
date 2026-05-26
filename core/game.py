@@ -4,15 +4,17 @@ from assets import config
 from core.screen import GameScreen
 from core.snake import Snake
 from core.apple import Apple
+from core.hud import HUD  # Importa o novo módulo HUD
 
 def run_game():
     pygame.init()
     screen = GameScreen()
     clock = pygame.time.Clock()
     
-    # Instanciação dos objetos iniciais
+    # Instanciação dos objetos
     snake = Snake()
     apple = Apple(snake.body)
+    hud = HUD()  # Instancia o gerenciador do placar
     
     # Evento de tempo para o movimento da cobra
     SNAKE_MOVE_EVENT = pygame.USEREVENT + 1
@@ -26,7 +28,7 @@ def run_game():
                 sys.exit()
             
             elif event.type == SNAKE_MOVE_EVENT:
-                # --- Lógica de Movimento e Crescimento ---
+                # Lógica de Movimento e Crescimento
                 current_head = snake.body[0]
                 new_head = [
                     current_head[0] + snake.direction[0],
@@ -39,18 +41,14 @@ def run_game():
                 else:
                     snake.move()
                 
-                # --- Sistema de Colisões (Game Over) ---
+                # Sistema de Colisões (Game Over)
                 head = snake.body[0]
-                
-                # A. Colisão com as Paredes
                 hit_wall_x = head[0] < 0 or head[0] >= config.SCREEN_WIDTH
                 hit_wall_y = head[1] < 0 or head[1] >= config.SCREEN_HEIGHT
-                
-                # B. Colisão com o próprio corpo
                 hit_self = snake.check_self_collision()
                 
                 if hit_wall_x or hit_wall_y or hit_self:
-                    # Se houver colisão, reinicia o estado dos objetos (Reset do Jogo)
+                    # Reset do Jogo mantém o placar zerado automaticamente
                     snake = Snake()
                     apple = Apple(snake.body)
                 
@@ -67,8 +65,12 @@ def run_game():
         # 2. Renderização
         screen.render_background()
         
+        # Desenha os elementos do jogo
         snake.draw(screen.surface)
         apple.draw(screen.surface)
+        
+        # Desenha o HUD por cima dos elementos, passando o tamanho atual da lista do corpo
+        hud.draw_score(screen.surface, len(snake.body))
         
         screen.update()
         clock.tick(config.FPS)
