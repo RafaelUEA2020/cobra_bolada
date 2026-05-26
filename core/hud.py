@@ -57,3 +57,24 @@ class HUD:
         text_y = (config.SCREEN_HEIGHT - paused_surface.get_height()) // 2
         
         surface.blit(paused_surface, (text_x, text_y))
+
+    def draw_menu(self, surface):
+        """Desenha a tela de menu inicial com o título e instruções."""
+        # Cria uma fonte maior para o título do jogo
+        main_font = pygame.font.SysFont(config.FONT_NAME, 40)
+        
+        # Renderiza os textos
+        title_surf = main_font.render(config.GAME_TITLE.upper(), True, config.COLOR_SNAKE)
+        start_surf = self.font.render("Press SPACE to Start", True, (255, 255, 255))
+        
+        # Instruções de controles
+        move_surf = self.font.render("Arrow Keys: Move Snake", True, (180, 180, 180))
+        pause_surf = self.font.render("P Key: Pause / Unpause Game", True, (180, 180, 180))
+        
+        # Calcula as posições centralizadas na tela
+        center_x = config.SCREEN_WIDTH // 2
+        
+        surface.blit(title_surf, (center_x - title_surf.get_width() // 2, 150))
+        surface.blit(start_surf, (center_x - start_surf.get_width() // 2, 250))
+        surface.blit(move_surf, (center_x - move_surf.get_width() // 2, 380))
+        surface.blit(pause_surf, (center_x - pause_surf.get_width() // 2, 420))

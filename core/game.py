@@ -15,7 +15,8 @@ def run_game():
     apple = Apple(snake.body)
     hud = HUD()
     
-    # Estado inicial de pausa do jogo
+    # Estados do Jogo
+    in_menu = True
     is_paused = False
     
     SNAKE_MOVE_EVENT = pygame.USEREVENT + 1
@@ -28,23 +29,28 @@ def run_game():
                 sys.exit()
             
             elif event.type == pygame.KEYDOWN:
-                # Se apertar P, alterna o estado de pausa (Pausa / Despausa)
-                if event.key == pygame.K_p:
-                    is_paused = not is_paused
+                # Se estiver no menu inicial, só reage à tecla ESPAÇO
+                if in_menu:
+                    if event.key == pygame.K_SPACE:
+                        in_menu = False
                 
-                # Os comandos de direção só funcionam se o jogo NÃO estiver pausado
-                if not is_paused:
-                    if event.key == pygame.K_UP:
-                        snake.change_direction("UP")
-                    elif event.key == pygame.K_DOWN:
-                        snake.change_direction("DOWN")
-                    elif event.key == pygame.K_LEFT:
-                        snake.change_direction("LEFT")
-                    elif event.key == pygame.K_RIGHT:
-                        snake.change_direction("RIGHT")
+                # Se não estiver no menu, roda a lógica normal de jogo e pausa
+                else:
+                    if event.key == pygame.K_p:
+                        is_paused = not is_paused
+                    
+                    if not is_paused:
+                        if event.key == pygame.K_UP:
+                            snake.change_direction("UP")
+                        elif event.key == pygame.K_DOWN:
+                            snake.change_direction("DOWN")
+                        elif event.key == pygame.K_LEFT:
+                            snake.change_direction("LEFT")
+                        elif event.key == pygame.K_RIGHT:
+                            snake.change_direction("RIGHT")
             
-            # O evento de movimento da cobra só é processado se o jogo NÃO estiver pausado
-            elif event.type == SNAKE_MOVE_EVENT and not is_paused:
+            # O movimento só acontece se NÃO estiver no menu e NÃO estiver pausado
+            elif event.type == SNAKE_MOVE_EVENT and not in_menu and not is_paused:
                 current_head = snake.body[0]
                 new_head = [
                     current_head[0] + snake.direction[0],
@@ -67,20 +73,25 @@ def run_game():
                     current_score = len(snake.body) - 3
                     hud.save_high_score(current_score)
                     
+                    # Reseta os objetos e volta para o menu inicial
                     snake = Snake()
                     apple = Apple(snake.body)
+                    in_menu = True 
         
-        # --- Renderização contínua de frames ---
+        # --- Renderização ---
         screen.render_background()
         
-        # Desenha o jogo por baixo
-        snake.draw(screen.surface)
-        apple.draw(screen.surface)
-        hud.draw_score(screen.surface, len(snake.body))
-        
-        # Se estiver pausado, desenha o aviso "PAUSED" por cima de tudo
-        if is_paused:
-            hud.draw_paused(screen.surface)
+        if in_menu:
+            # Se estiver no menu, desenha apenas a tela inicial
+            hud.draw_menu(screen.surface)
+        else:
+            # Se estiver jogando, desenha os elementos normais do gameplay
+            snake.draw(screen.surface)
+            apple.draw(screen.surface)
+            hud.draw_score(screen.surface, len(snake.body))
+            
+            if is_paused:
+                hud.draw_paused(screen.surface)
         
         screen.update()
         clock.tick(config.FPS)
